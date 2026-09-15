@@ -8,15 +8,28 @@ CREATE TABLE IF NOT EXISTS users (
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
--- Default workspace folders (ALL-15)
+-- Projects (ALL-11)
+CREATE TABLE IF NOT EXISTS projects (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id);
+
+-- Folders: project_id NULL = legacy general files, otherwise scoped to project (ALL-11/ALL-15)
 CREATE TABLE IF NOT EXISTS folders (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   name TEXT NOT NULL,
+  project_id TEXT REFERENCES projects(id),
   created_at TEXT NOT NULL,
-  UNIQUE(user_id, name)
+  UNIQUE(user_id, name) -- Note: for project folders, uniqueness is per-project
 );
 CREATE INDEX IF NOT EXISTS idx_folders_user ON folders(user_id);
+CREATE INDEX IF NOT EXISTS idx_folders_project ON folders(project_id);
 
 -- Markdown / JSON files (ALL-16 / ALL-17)
 CREATE TABLE IF NOT EXISTS files (

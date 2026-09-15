@@ -8,6 +8,13 @@ import {
   DEFAULT_FOLDER_NAME,
 } from "@/lib/db";
 import { listUserFiles } from "@/lib/files-agent";
+import {
+  findProjectFolderByName,
+  getProject,
+  listProjectFiles,
+  listProjectFolders,
+  listProjects,
+} from "@/lib/projects";
 
 function jsonError(status: number, error: string) {
   return Response.json({ error }, { status });
@@ -48,6 +55,41 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const folderParam = url.searchParams.get("folder");
+    const projectParam = url.searchParams.get("project");
+
+    if (projectParam) {
+      const projects = await listProjects(agent.userId);
+      const project = projects.find(
+        (p) => p.id === projectParam || p.name.toLowerCase() === projectParam.toLowerCase(),
+      );
+      if (!project) return jsonError(404, "Project not found.");
+
+      const folderInProject = folderParam
+        ? await findProjectFolderByName(agent.userId, project.id, folderParam)
+        : undefined;
+
+      const files = await listProjectFiles(
+        agent.userId,
+        project.id,
+        folderInProject?.id,
+      );
+      return Response.json({
+        project: { id: project.id, name: project.name },
+        files: files.map((f) =>
+          publicFile({
+            id: f.id,
+            name: f.name,
+            type: f.type,
+            folder_id: f.folder_id,
+            folder_name: f.folder_name,
+            size: f.size,
+            updated_at: f.updated_at,
+            created_at: f.created_at,
+          }),
+        ),
+      });
+    }
+
     let folderId: string | undefined;
     if (folderParam === "all") {
       folderId = undefined;
@@ -90,16 +132,46 @@ export async function POST(request: Request) {
       type?: string;
       content?: string;
       folderName?: string;
+      projectId?: string;
+      projectName?: string;
     } | null;
     if (!body) return jsonError(400, "Invalid JSON body.");
 
     const type = body.type === "json" ? "json" : body.type === "md" ? "md" : null;
     if (!type) return jsonError(400, "type must be md or json.");
 
-    const folder = body.folderName
-      ? await findFolderByName(agent.userId, body.folderName)
-      : await ensureDefaultFolder(agent.userId);
-    if (!folder) return jsonError(404, "Folder not found.");
+    let folder: { id: string; name: string } | null = null;
+    let projectInfo: { id: string; name: string } | undefined;
+
+    if (body.projectId || body.projectName) {
+      const projects = await listProjects(agent.userId);
+      const project = projects.find(
+        (p) =>
+          p.id === body.projectId ||
+          (body.projectName && p.name.toLowerCase() === body.projectName.toLowerCase()),
+      );
+      if (!project) return jsonError(404, "Project not found.");
+      projectInfo = { id: project.id, name: project.name };
+
+      const projectFolders = await listProjectFolders(agent.userId, project.id);
+      if (body.folderName) {
+        const found = projectFolders.find(
+          (f) => f.name.toLowerCase() === body.folderName!.toLowerCase(),
+        );
+        if (!found) return jsonError(404, "Folder not found in project.");
+        folder = { id: found.id, name: found.name };
+      } else {
+        const defaultFolder = projectFolders.find((f) => f.name === DEFAULT_FOLDER_NAME);
+        if (!defaultFolder) return jsonError(404, "Default folder not found in project.");
+        folder = { id: defaultFolder.id, name: defaultFolder.name };
+      }
+    } else {
+      const f = body.folderName
+        ? await findFolderByName(agent.userId, body.folderName)
+        : await ensureDefaultFolder(agent.userId);
+      if (!f) return jsonError(404, "Folder not found.");
+      folder = { id: f.id, name: f.name };
+    }
 
     const name = normalizeFileName(String(body.name ?? ""), type as FileType);
     if (!name.replace(/\.(md|json)$/i, "").trim()) {
@@ -128,6 +200,7 @@ export async function POST(request: Request) {
       return Response.json(
         {
           ok: true,
+          ...(projectInfo ? { project: projectInfo } : {}),
           file: publicFile({
             id: file.id,
             name: file.name,

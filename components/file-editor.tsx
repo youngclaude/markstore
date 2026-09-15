@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  ChevronRightIcon,
   CodeIcon,
   DownloadIcon,
   EyeIcon,
   FolderIcon,
   HistoryIcon,
   PencilIcon,
+  ProjectIcon,
   SaveIcon,
   TreeIcon,
 } from "@/components/icons";
@@ -26,12 +28,16 @@ export function FileEditor({
   name,
   type,
   folderName,
+  projectId,
+  projectName,
   initialContent,
 }: {
   fileId: string;
   name: string;
   type: FileType;
   folderName: string;
+  projectId?: string | null;
+  projectName?: string | null;
   initialContent: string;
 }) {
   const [content, setContent] = useState(initialContent);
@@ -115,10 +121,24 @@ export function FileEditor({
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 px-5 py-3">
         <div className="min-w-0">
           <nav className="flex items-center gap-1.5 text-sm text-slate-400">
-            <FolderIcon className="h-3.5 w-3.5 text-[#4F9DFF]" />
-            <Link href="/app" className="hover:text-slate-200">
-              {folderName}
-            </Link>
+            {projectId && projectName ? (
+              <>
+                <ProjectIcon className="h-3.5 w-3.5 text-[#4F9DFF]" />
+                <Link href={`/app/projects/${projectId}`} className="hover:text-slate-200">
+                  {projectName}
+                </Link>
+                <ChevronRightIcon className="h-3 w-3" />
+                <FolderIcon className="h-3.5 w-3.5 text-[#4F9DFF]" />
+                <span className="hover:text-slate-200">{folderName}</span>
+              </>
+            ) : (
+              <>
+                <FolderIcon className="h-3.5 w-3.5 text-[#4F9DFF]" />
+                <Link href="/app" className="hover:text-slate-200">
+                  {folderName}
+                </Link>
+              </>
+            )}
             <span className="text-slate-600">/</span>
             <span className="truncate font-medium text-slate-100">{name}</span>
           </nav>
