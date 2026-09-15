@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { AppShell } from "@/components/app-shell";
 import { CreateFileForm } from "@/components/create-file-form";
 import { resolveAuthSecret } from "@/lib/auth-secret";
+import { isAdminEmail } from "@/lib/admin";
 import type { FileType } from "@/lib/files-shared";
 
 export default async function NewFilePage({
@@ -16,11 +17,12 @@ export default async function NewFilePage({
   }
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
+  const isAdmin = isAdminEmail(email);
   const sp = searchParams ? await searchParams : {};
   const defaultType: FileType = sp.type === "json" ? "json" : "md";
 
   return (
-    <AppShell email={email}>
+    <AppShell email={email} isAdmin={isAdmin}>
       <div className="relative flex flex-1 items-start justify-center px-4 py-10 sm:items-center">
         <div
           aria-hidden

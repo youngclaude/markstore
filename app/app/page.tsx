@@ -10,6 +10,7 @@ import {
   getFolder,
 } from "@/lib/db";
 import { resolveAuthSecret } from "@/lib/auth-secret";
+import { isAdminEmail } from "@/lib/admin";
 
 export default async function AppPage({
   searchParams,
@@ -24,6 +25,7 @@ export default async function AppPage({
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
   const userId = session?.user?.id;
+  const isAdmin = isAdminEmail(email);
 
   if (!userId) {
     return null;
@@ -64,7 +66,7 @@ export default async function AppPage({
     : null;
 
   return (
-    <AppShell email={email} activeFolder={DEFAULT_FOLDER_NAME}>
+    <AppShell email={email} activeFolder={DEFAULT_FOLDER_NAME} isAdmin={isAdmin}>
       <header className="flex items-center justify-between gap-4 border-b border-slate-800/80 px-6 py-4">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1D7BFF]/15 text-[#4F9DFF]">

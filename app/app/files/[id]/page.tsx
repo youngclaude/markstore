@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { FileEditor } from "@/components/file-editor";
 import { getFileForUser } from "@/lib/db";
 import { resolveAuthSecret } from "@/lib/auth-secret";
+import { isAdminEmail } from "@/lib/admin";
 
 export default async function FileEditorPage({
   params,
@@ -23,9 +24,10 @@ export default async function FileEditorPage({
   if (!file) notFound();
 
   const activeFolder = file.project_id ? "__projects__" : file.folder_name;
+  const isAdmin = isAdminEmail(session.user.email);
 
   return (
-    <AppShell email={session.user.email ?? "unknown"} activeFolder={activeFolder}>
+    <AppShell email={session.user.email ?? "unknown"} activeFolder={activeFolder} isAdmin={isAdmin}>
       <FileEditor
         fileId={file.id}
         name={file.name}
