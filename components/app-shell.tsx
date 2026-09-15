@@ -1,9 +1,19 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { FolderIcon, GridIcon, SettingsIcon } from "@/components/icons";
+import { GlobalSearch } from "@/components/global-search";
 import { DEFAULT_FOLDER_NAME } from "@/lib/files-shared";
 import { signOut } from "@/auth";
 import { resolveAuthSecret } from "@/lib/auth-secret";
+
+function BellIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
 
 export function AppShell({
   email,
@@ -90,7 +100,23 @@ export function AppShell({
           </form>
         </div>
       </aside>
-      <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center justify-between gap-4 border-b border-slate-800/80 bg-[#0A0C12]/80 px-6 py-3">
+          <GlobalSearch />
+          <div className="flex items-center gap-3">
+            <button className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200">
+              <BellIcon className="h-5 w-5" />
+            </button>
+            <Link
+              href="/app/settings"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1D7BFF]/25 text-xs font-semibold text-cyan-100 transition-colors hover:bg-[#1D7BFF]/35"
+            >
+              {initials}
+            </Link>
+          </div>
+        </header>
+        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+      </div>
     </div>
   );
 }
