@@ -6,15 +6,23 @@ import { verifyPassword } from "@/lib/password";
 
 function createNextAuth() {
   // Resolve Workers secret binding into process.env before Auth.js reads it
+  let secret: string | undefined;
   try {
-    resolveAuthSecret();
+    secret = resolveAuthSecret();
   } catch {
-    /* local/build may rely on process.env alone */
+    // Fall back to process.env directly
+    secret = process.env.AUTH_SECRET;
+  }
+
+  // If no secret is available, we can't create a valid auth instance
+  // Auth.js will throw when trying to sign/verify JWTs
+  if (!secret) {
+    console.error("[Auth] No AUTH_SECRET available");
   }
 
   return NextAuth({
     trustHost: true,
-    secret: process.env.AUTH_SECRET,
+    secret,
     session: { strategy: "jwt" },
     pages: {
       signIn: "/signin",
@@ -28,11 +36,6 @@ function createNextAuth() {
           password: { label: "Password", type: "password" },
         },
         async authorize(credentials) {
-          try {
-            resolveAuthSecret();
-          } catch {
-            /* Auth.js validates secret separately */
-          }
           const email = String(credentials?.email ?? "")
             .toLowerCase()
             .trim();
