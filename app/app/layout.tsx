@@ -2,14 +2,12 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  // Test: add auth import only to see if it causes the issue
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/signin");
-  }
+  // Test: import auth but don't call it
+  // Just checking if the import itself causes the error
+  const hasAuth = typeof auth === "function";
   return (
     <div>
-      <p>Test: Auth import works</p>
+      <p>Test: Auth import works: {hasAuth ? "yes" : "no"}</p>
       {children}
     </div>
   );
