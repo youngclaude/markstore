@@ -53,7 +53,11 @@ curl -sS -X DELETE -b 'authjs.session-token=…' \
   https://usemarkstore.com/api/keys/<key-id>
 ```
 
-### Agent file API (`Authorization: Bearer msk_…`)
+### Agent API (`Authorization: Bearer msk_…`)
+
+All agent API endpoints require a valid `msk_…` Bearer token. Unauthenticated or invalid requests return `401`.
+
+#### Files
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -63,12 +67,62 @@ curl -sS -X DELETE -b 'authjs.session-token=…' \
 | `PATCH` | `/api/v1/files/:id` | Update `content` and/or `name` (content save creates a version) |
 | `DELETE` | `/api/v1/files/:id` | Delete file + versions |
 
+#### Folders (legacy, non-project)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/folders` | List folders |
+| `POST` | `/api/v1/folders` | Create `{ name }` |
+| `GET` | `/api/v1/folders/:id` | Get folder |
+| `PATCH` | `/api/v1/folders/:id` | Rename `{ name }` |
+| `DELETE` | `/api/v1/folders/:id` | Delete folder (cannot delete `general files`) |
+
+#### Projects
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/projects` | List projects |
+| `POST` | `/api/v1/projects` | Create `{ name, description? }` |
+| `GET` | `/api/v1/projects/:id` | Get project |
+| `PATCH` | `/api/v1/projects/:id` | Update `{ name?, description? }` |
+| `DELETE` | `/api/v1/projects/:id` | Delete project + folders + files |
+
+#### Project Folders
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/projects/:id/folders` | List folders in project |
+| `POST` | `/api/v1/projects/:id/folders` | Create `{ name }` |
+| `GET` | `/api/v1/projects/:id/folders/:folderId` | Get folder |
+| `PATCH` | `/api/v1/projects/:id/folders/:folderId` | Rename `{ name }` |
+| `DELETE` | `/api/v1/projects/:id/folders/:folderId` | Delete folder (cannot delete `general files`) |
+
+#### File Versions
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/files/:id/versions` | List versions for a file |
+| `GET` | `/api/v1/files/:id/versions/:version` | Get version content (+ previous) |
+| `POST` | `/api/v1/files/:id/versions/:version` | Restore version `{ "action": "restore" }` |
+
+#### File Sharing
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/files/:id/share` | Get share status |
+| `POST` | `/api/v1/files/:id/share` | Create/enable public share link |
+| `DELETE` | `/api/v1/files/:id/share` | Revoke public share link |
+
+#### Examples
+
 ```bash
 export MSK_KEY='msk_…'
 export BASE=https://usemarkstore.com
 
 # Unauthenticated → 401
 curl -sS -o /dev/null -w '%{http_code}\n' $BASE/api/v1/files
+
+# --- Files ---
 
 # List general files
 curl -sS -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/files
@@ -90,6 +144,77 @@ curl -sS -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/files/<id>
 curl -sS -X PATCH -H "Authorization: Bearer $MSK_KEY" -H 'Content-Type: application/json' \
   -d '{"content":"# Updated"}' $BASE/api/v1/files/<id>
 curl -sS -X DELETE -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/files/<id>
+
+# --- Folders (legacy) ---
+
+# List folders
+curl -sS -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/folders
+
+# Create folder
+curl -sS -H "Authorization: Bearer $MSK_KEY" -H 'Content-Type: application/json' \
+  -d '{"name":"my-folder"}' $BASE/api/v1/folders
+
+# Rename folder
+curl -sS -X PATCH -H "Authorization: Bearer $MSK_KEY" -H 'Content-Type: application/json' \
+  -d '{"name":"renamed-folder"}' $BASE/api/v1/folders/<id>
+
+# Delete folder
+curl -sS -X DELETE -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/folders/<id>
+
+# --- Projects ---
+
+# List projects
+curl -sS -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/projects
+
+# Create project
+curl -sS -H "Authorization: Bearer $MSK_KEY" -H 'Content-Type: application/json' \
+  -d '{"name":"My Project","description":"Optional description"}' $BASE/api/v1/projects
+
+# Get / update / delete project
+curl -sS -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/projects/<id>
+curl -sS -X PATCH -H "Authorization: Bearer $MSK_KEY" -H 'Content-Type: application/json' \
+  -d '{"name":"Renamed Project"}' $BASE/api/v1/projects/<id>
+curl -sS -X DELETE -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/projects/<id>
+
+# --- Project Folders ---
+
+# List project folders
+curl -sS -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/projects/<projectId>/folders
+
+# Create project folder
+curl -sS -H "Authorization: Bearer $MSK_KEY" -H 'Content-Type: application/json' \
+  -d '{"name":"src"}' $BASE/api/v1/projects/<projectId>/folders
+
+# Rename project folder
+curl -sS -X PATCH -H "Authorization: Bearer $MSK_KEY" -H 'Content-Type: application/json' \
+  -d '{"name":"source"}' $BASE/api/v1/projects/<projectId>/folders/<folderId>
+
+# Delete project folder
+curl -sS -X DELETE -H "Authorization: Bearer $MSK_KEY" \
+  $BASE/api/v1/projects/<projectId>/folders/<folderId>
+
+# --- Versions ---
+
+# List file versions
+curl -sS -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/files/<id>/versions
+
+# Get specific version
+curl -sS -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/files/<id>/versions/1
+
+# Restore version
+curl -sS -X POST -H "Authorization: Bearer $MSK_KEY" -H 'Content-Type: application/json' \
+  -d '{"action":"restore"}' $BASE/api/v1/files/<id>/versions/1
+
+# --- Sharing ---
+
+# Get share status
+curl -sS -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/files/<id>/share
+
+# Enable public share
+curl -sS -X POST -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/files/<id>/share
+
+# Revoke share
+curl -sS -X DELETE -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/files/<id>/share
 ```
 
 Schema: `api_keys(id, user_id, name, key_hash, key_prefix, created_at, last_used_at, revoked_at)`.

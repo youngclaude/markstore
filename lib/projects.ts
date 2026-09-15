@@ -254,6 +254,29 @@ export async function deleteProjectFolder(
   return (result.meta?.changes ?? 0) > 0;
 }
 
+export async function renameProjectFolder(
+  userId: string,
+  folderId: string,
+  newName: string,
+): Promise<ProjectFolderRow | null> {
+  const folder = await getProjectFolder(userId, folderId);
+  if (!folder) return null;
+  if (folder.name === DEFAULT_FOLDER_NAME) return null;
+  const trimmed = newName.trim();
+  if (!trimmed) return null;
+  await getDb()
+    .prepare(`UPDATE folders SET name = ? WHERE id = ? AND user_id = ?`)
+    .bind(trimmed, folderId, userId)
+    .run();
+  return {
+    id: folder.id,
+    user_id: folder.user_id,
+    name: trimmed,
+    project_id: folder.project_id,
+    created_at: folder.created_at,
+  };
+}
+
 export type ProjectFileRow = {
   id: string;
   user_id: string;
