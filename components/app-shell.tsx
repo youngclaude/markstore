@@ -15,6 +15,7 @@ export function AppShell({
   activeFolder?: string;
 }) {
   const initials = email.slice(0, 2).toUpperCase();
+  const settingsActive = activeFolder === "__settings__";
 
   return (
     <div className="flex min-h-screen bg-[#0B0E14] text-slate-50">
@@ -29,13 +30,27 @@ export function AppShell({
           <Link
             href="/app"
             className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm ${
-              activeFolder === DEFAULT_FOLDER_NAME
+              !settingsActive && activeFolder === DEFAULT_FOLDER_NAME
                 ? "bg-[#1D7BFF]/15 text-cyan-200 ring-1 ring-[#1D7BFF]/30"
                 : "text-slate-300 hover:bg-slate-900"
             }`}
           >
             <FolderIcon className="h-4 w-4 text-[#4F9DFF]" />
             <span className="truncate">{DEFAULT_FOLDER_NAME}</span>
+          </Link>
+          <p className="mb-2 mt-5 px-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            Account
+          </p>
+          <Link
+            href="/app/settings"
+            className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm ${
+              settingsActive
+                ? "bg-[#1D7BFF]/15 text-cyan-200 ring-1 ring-[#1D7BFF]/30"
+                : "text-slate-300 hover:bg-slate-900"
+            }`}
+          >
+            <SettingsIcon className="h-4 w-4 text-[#4F9DFF]" />
+            <span className="truncate">Settings</span>
           </Link>
         </nav>
         <div className="border-t border-slate-800/80 p-3">
@@ -59,7 +74,6 @@ export function AppShell({
               type="submit"
               className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-slate-400 hover:bg-slate-900 hover:text-slate-200"
             >
-              <SettingsIcon />
               Sign out
             </button>
           </form>
