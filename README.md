@@ -1,11 +1,11 @@
-# vinext app
+# MarkStore
 
-This project was created with create-vinext-app.
+Vinext Next.js app on Cloudflare Workers.
 
 ## Scripts
 
-- `pnpm run dev` starts the vinext dev server.
-- `pnpm run build` builds the Cloudflare Worker output.
-- `pnpm run start` starts the built Worker locally with Wrangler.
-- `pnpm run deploy` deploys the Cloudflare Worker.
+- `npm run build` — builds the Cloudflare Worker output
+- `npm run deploy` — deploys via vinext-cloudflare
+- `npm run start` — local wrangler dev against dist
 
+Connected to Cloudflare Workers Builds (GitHub → main).
