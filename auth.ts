@@ -72,33 +72,68 @@ function createNextAuth() {
 type AuthApi = ReturnType<typeof createNextAuth>;
 
 let cached: AuthApi | null = null;
+let authError: Error | null = null;
 
-function getAuth(): AuthApi {
-  if (!cached) cached = createNextAuth();
+function getAuth(): AuthApi | null {
+  if (authError) return null;
+  if (!cached) {
+    try {
+      cached = createNextAuth();
+    } catch (error) {
+      console.error("[auth] Error creating NextAuth:", error);
+      authError = error as Error;
+      return null;
+    }
+  }
   return cached;
 }
 
 export const handlers = {
-  GET: (req: Request) => getAuth().handlers.GET(req),
-  POST: (req: Request) => getAuth().handlers.POST(req),
+  GET: async (req: Request) => {
+    const authInstance = getAuth();
+    if (!authInstance) {
+      return new Response(JSON.stringify({ error: "Auth not configured" }), { status: 500 });
+    }
+    return authInstance.handlers.GET(req);
+  },
+  POST: async (req: Request) => {
+    const authInstance = getAuth();
+    if (!authInstance) {
+      return new Response(JSON.stringify({ error: "Auth not configured" }), { status: 500 });
+    }
+    return authInstance.handlers.POST(req);
+  },
 };
 
 export const auth: AuthApi["auth"] = (async (...args: Parameters<AuthApi["auth"]>) => {
   try {
     const authInstance = getAuth();
+    if (!authInstance) {
+      console.error("[auth] No auth instance available");
+      return null;
+    }
     // @ts-expect-error Auth.js overload forwarding
     return await authInstance.auth(...args);
   } catch (error) {
     console.error("[auth] Error in auth():", error);
-    // Return null session on error instead of throwing
     return null;
   }
 }) as AuthApi["auth"];
 
-export const signIn: AuthApi["signIn"] = ((...args: Parameters<AuthApi["signIn"]>) =>
+export const signIn: AuthApi["signIn"] = (async (...args: Parameters<AuthApi["signIn"]>) => {
+  const authInstance = getAuth();
+  if (!authInstance) {
+    throw new Error("Auth not configured");
+  }
   // @ts-expect-error Auth.js overload forwarding
-  getAuth().signIn(...args)) as AuthApi["signIn"];
+  return authInstance.signIn(...args);
+}) as AuthApi["signIn"];
 
-export const signOut: AuthApi["signOut"] = ((...args: Parameters<AuthApi["signOut"]>) =>
+export const signOut: AuthApi["signOut"] = (async (...args: Parameters<AuthApi["signOut"]>) => {
+  const authInstance = getAuth();
+  if (!authInstance) {
+    throw new Error("Auth not configured");
+  }
   // @ts-expect-error Auth.js overload forwarding
-  getAuth().signOut(...args)) as AuthApi["signOut"];
+  return authInstance.signOut(...args);
+}) as AuthApi["signOut"];
