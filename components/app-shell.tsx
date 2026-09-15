@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { FolderIcon, GridIcon, SettingsIcon } from "@/components/icons";
+import { FolderIcon, GridIcon, SettingsIcon, CreditCardIcon } from "@/components/icons";
 import { GlobalSearch } from "@/components/global-search";
 import { DEFAULT_FOLDER_NAME } from "@/lib/files-shared";
 import { signOut } from "@/auth";
@@ -26,6 +26,7 @@ export function AppShell({
 }) {
   const initials = email.slice(0, 2).toUpperCase();
   const settingsActive = activeFolder === "__settings__";
+  const billingActive = activeFolder === "__billing__";
 
   return (
     <div className="flex min-h-screen bg-[#0B0E14] text-slate-50">
@@ -51,7 +52,7 @@ export function AppShell({
           <Link
             href="/app"
             className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm ${
-              !settingsActive && activeFolder === DEFAULT_FOLDER_NAME
+              !settingsActive && !billingActive && activeFolder === DEFAULT_FOLDER_NAME
                 ? "bg-[#1D7BFF]/15 text-cyan-200 ring-1 ring-[#1D7BFF]/30"
                 : "text-slate-300 hover:bg-slate-900"
             }`}
@@ -72,6 +73,17 @@ export function AppShell({
           >
             <SettingsIcon className="h-4 w-4 text-[#4F9DFF]" />
             <span className="truncate">Settings</span>
+          </Link>
+          <Link
+            href="/app/settings/billing"
+            className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm ${
+              billingActive
+                ? "bg-[#1D7BFF]/15 text-cyan-200 ring-1 ring-[#1D7BFF]/30"
+                : "text-slate-300 hover:bg-slate-900"
+            }`}
+          >
+            <CreditCardIcon className="h-4 w-4 text-[#4F9DFF]" />
+            <span className="truncate">Billing</span>
           </Link>
         </nav>
         <div className="border-t border-slate-800/80 p-3">

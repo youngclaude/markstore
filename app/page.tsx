@@ -48,9 +48,9 @@ export default function Home() {
           <a href="#features" className="hover:text-white">
             Features
           </a>
-          <a href="#pricing" className="hover:text-white">
+          <Link href="/pricing" className="hover:text-white">
             Pricing
-          </a>
+          </Link>
           <Link href="/docs" className="hover:text-white">
             Docs
           </Link>
