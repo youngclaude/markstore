@@ -2,12 +2,23 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  // Test: import auth but don't call it
-  // Just checking if the import itself causes the error
-  const hasAuth = typeof auth === "function";
+  // Test: wrap auth() in try-catch
+  let session = null;
+  try {
+    session = await auth();
+  } catch (error) {
+    console.error("[AppLayout] auth() threw:", error);
+    // If auth fails, redirect to signin
+    redirect("/signin");
+  }
+  
+  if (!session?.user?.id) {
+    redirect("/signin");
+  }
+  
   return (
     <div>
-      <p>Test: Auth import works: {hasAuth ? "yes" : "no"}</p>
+      <p>Test: Auth works, user: {session.user.email}</p>
       {children}
     </div>
   );
