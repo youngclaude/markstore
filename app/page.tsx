@@ -51,9 +51,9 @@ export default function Home() {
           <a href="#pricing" className="hover:text-white">
             Pricing
           </a>
-          <a href="#docs" className="hover:text-white">
+          <Link href="/docs" className="hover:text-white">
             Docs
-          </a>
+          </Link>
         </nav>
         <div className="flex items-center gap-3 text-sm">
           <Link href="/signin" className="hidden text-slate-300 hover:text-white sm:inline">
