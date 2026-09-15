@@ -60,3 +60,16 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 CREATE INDEX IF NOT EXISTS idx_api_keys_user ON api_keys(user_id);
 CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys(key_hash);
+
+-- Public share links (ALL-9)
+CREATE TABLE IF NOT EXISTS file_shares (
+  id TEXT PRIMARY KEY,
+  file_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL,
+  revoked_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_file_shares_file ON file_shares(file_id);
+CREATE INDEX IF NOT EXISTS idx_file_shares_user ON file_shares(user_id);
+CREATE INDEX IF NOT EXISTS idx_file_shares_slug ON file_shares(slug);
