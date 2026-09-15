@@ -233,6 +233,99 @@ Public viewers see rendered Markdown or syntax-highlighted JSON. The page prompt
 
 Schema: `file_shares(id, file_id, user_id, slug UNIQUE, created_at, revoked_at)`.
 
+## Stripe Billing (ALL-12)
+
+MarkStore offers Free and Pro ($9/mo) plans with Stripe Checkout and Customer Portal.
+
+### Plan Limits
+
+| Plan | Projects | Storage | API Calls/mo |
+|------|----------|---------|--------------|
+| Free | 3 | 1 GB | 1,000 |
+| Pro | 50 | 100 GB | 100,000 |
+
+### Required Environment Variables
+
+Set these as Cloudflare Workers secrets:
+
+```bash
+# Stripe API secret key (starts with sk_test_ or sk_live_)
+wrangler secret put STRIPE_SECRET_KEY
+
+# Stripe webhook signing secret (starts with whsec_)
+wrangler secret put STRIPE_WEBHOOK_SECRET
+
+# Stripe Price ID for Pro plan ($9/mo recurring)
+# Production value: price_1UFvbSAPiH3q2T64e1HvS1y9
+wrangler secret put STRIPE_PRICE_PRO
+```
+
+**Production environment variables (already set):**
+- `STRIPE_PRICE_PRO=price_1UFvbSAPiH3q2T64e1HvS1y9`
+
+**Still required on Worker:**
+- `STRIPE_SECRET_KEY` — Stripe API secret key (sk_test_... or sk_live_...)
+- `STRIPE_WEBHOOK_SECRET` — Stripe webhook signing secret (whsec_...)
+
+### Setting Up Stripe
+
+1. Create a [Stripe account](https://dashboard.stripe.com/register) and get your API keys from the Dashboard
+2. Create a Product and Price:
+   - Go to Products → Add product
+   - Name: "MarkStore Pro"
+   - Pricing: $9.00 USD, Recurring monthly
+   - Copy the Price ID (starts with `price_`)
+3. Set up the webhook endpoint:
+   - Go to Developers → Webhooks → Add endpoint
+   - URL: `https://usemarkstore.com/api/stripe/webhook`
+   - Events to listen for:
+     - `checkout.session.completed`
+     - `customer.subscription.updated`
+     - `customer.subscription.deleted`
+   - Copy the Signing secret
+4. Configure the Customer Portal:
+   - Go to Settings → Billing → Customer portal
+   - Enable "Allow customers to update subscriptions"
+   - Enable "Allow customers to cancel subscriptions"
+
+### Testing Locally
+
+```bash
+# Install Stripe CLI
+brew install stripe/stripe-cli/stripe
+
+# Login to Stripe
+stripe login
+
+# Forward webhooks to local server
+stripe listen --forward-to localhost:5173/api/stripe/webhook
+
+# Copy the webhook signing secret from the output
+# and set it in your .dev.vars file:
+# STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Test with Stripe test card
+# Card: 4242 4242 4242 4242
+# Expiry: Any future date
+# CVC: Any 3 digits
+```
+
+### URLs
+
+- Public pricing: `/pricing`
+- In-app billing: `/app/settings/billing`
+- Checkout API: `POST /api/stripe/checkout`
+- Portal API: `POST /api/stripe/portal`
+- Webhook: `POST /api/stripe/webhook`
+
+### Database Migration
+
+Run the migration to add billing columns to the users table:
+
+```bash
+wrangler d1 execute markstore-users --file=migrations/0006_stripe_billing.sql
+```
+
 ## Scripts
 
 - `npm run dev` — local vinext

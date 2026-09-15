@@ -1,6 +1,13 @@
 import { auth } from "@/auth";
 import { resolveAuthSecret } from "@/lib/auth-secret";
 import { createProject, listProjects } from "@/lib/projects";
+import {
+  getUserBilling,
+  getEffectivePlan,
+  getProjectCount,
+  canCreateProject,
+  PLAN_LIMITS,
+} from "@/lib/billing";
 
 export async function GET() {
   try {
@@ -26,6 +33,23 @@ export async function POST(request: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
+
+    const userBilling = await getUserBilling(userId);
+    const plan = userBilling ? getEffectivePlan(userBilling) : "free";
+    const projectCount = await getProjectCount(userId);
+
+    if (!canCreateProject(plan, projectCount)) {
+      const limit = PLAN_LIMITS[plan].projects;
+      return Response.json(
+        {
+          error: `You've reached the limit of ${limit} projects on the ${plan === "free" ? "Free" : "Pro"} plan. ${plan === "free" ? "Upgrade to Pro for up to 50 projects." : ""}`,
+          code: "PLAN_LIMIT_EXCEEDED",
+        },
+        { status: 403 }
+      );
+    }
+
     const body = (await request.json()) as {
       name?: string;
       description?: string;
@@ -38,7 +62,7 @@ export async function POST(request: Request) {
 
     try {
       const project = await createProject({
-        userId: session.user.id,
+        userId,
         name,
         description: body.description,
       });

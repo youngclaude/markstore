@@ -21,6 +21,11 @@ export type UserRow = {
   password_hash: string;
   plan_to_store: string | null;
   created_at: string;
+  stripe_customer_id?: string | null;
+  plan?: string;
+  subscription_id?: string | null;
+  subscription_status?: string | null;
+  subscription_ends_at?: string | null;
 };
 
 export type FolderRow = {
