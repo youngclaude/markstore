@@ -105,6 +105,15 @@ const createProjectFileExample = `curl -X POST https://usemarkstore.com/api/v1/f
     "projectName": "my-project"
   }'`;
 
+const listFolderFilesExample = `curl -X GET "https://usemarkstore.com/api/v1/files?folder=Documents" \\
+  -H "Authorization: Bearer msk_..."`;
+
+const listVersionsExample = `curl -X GET https://usemarkstore.com/api/v1/files/{id}/versions \\
+  -H "Authorization: Bearer msk_..."`;
+
+const enableShareExample = `curl -X POST https://usemarkstore.com/api/v1/files/{id}/share \\
+  -H "Authorization: Bearer msk_..."`;
+
 const errorResponse = `{
   "error": "Unauthorized — provide Authorization: Bearer msk_…"
 }`;
@@ -429,14 +438,25 @@ export default function ApiReferencePage() {
           <section id="folders" className="mt-16 scroll-mt-20">
             <h2 className="text-2xl font-bold tracking-tight">Folders</h2>
             <p className="mt-4 text-slate-400">
-              Organize your files with folders. Folders are created automatically when you upload
-              files, or you can manage them through the web interface.
+              Organize your files with folders. Create, list, update, and delete folders programmatically.
             </p>
             <div className="mt-6">
               <EndpointList>
-                <EndpointBadge method="GET" path="/api/v1/files?folder={name}" description="List files in a folder" />
-                <EndpointBadge method="GET" path="/api/v1/files?folder=all" description="List all files across folders" />
+                <EndpointBadge method="GET" path="/api/v1/folders" description="List all folders" />
+                <EndpointBadge method="POST" path="/api/v1/folders" description="Create a folder" />
+                <EndpointBadge method="GET" path="/api/v1/folders/{id}" description="Get folder by ID" />
+                <EndpointBadge method="PATCH" path="/api/v1/folders/{id}" description="Rename a folder" />
+                <EndpointBadge method="DELETE" path="/api/v1/folders/{id}" description="Delete a folder" />
               </EndpointList>
+            </div>
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold">List Files in Folder</h3>
+              <p className="mt-2 text-sm text-slate-400">
+                Use the <code className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-cyan-300">folder</code> query parameter on the files endpoint.
+              </p>
+              <div className="mt-4">
+                <CodeBlock code={listFolderFilesExample} language="bash" filename="bash" />
+              </div>
             </div>
           </section>
 
@@ -447,10 +467,27 @@ export default function ApiReferencePage() {
               folder structure.
             </p>
             <div className="mt-6">
-              <EndpointList>
-                <EndpointBadge method="GET" path="/api/v1/files?project={id|name}" description="List project files" />
-                <EndpointBadge method="POST" path="/api/v1/files" description="Create file in project" />
-              </EndpointList>
+              <h3 className="text-lg font-semibold">Project Endpoints</h3>
+              <div className="mt-4">
+                <EndpointList>
+                  <EndpointBadge method="GET" path="/api/v1/projects" description="List all projects" />
+                  <EndpointBadge method="POST" path="/api/v1/projects" description="Create a project" />
+                  <EndpointBadge method="GET" path="/api/v1/projects/{id}" description="Get project by ID" />
+                  <EndpointBadge method="PATCH" path="/api/v1/projects/{id}" description="Update project" />
+                  <EndpointBadge method="DELETE" path="/api/v1/projects/{id}" description="Delete project" />
+                </EndpointList>
+              </div>
+            </div>
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold">Project Folders</h3>
+              <div className="mt-4">
+                <EndpointList>
+                  <EndpointBadge method="GET" path="/api/v1/projects/{id}/folders" description="List project folders" />
+                  <EndpointBadge method="POST" path="/api/v1/projects/{id}/folders" description="Create project folder" />
+                  <EndpointBadge method="PATCH" path="/api/v1/projects/{id}/folders/{folderId}" description="Update folder" />
+                  <EndpointBadge method="DELETE" path="/api/v1/projects/{id}/folders/{folderId}" description="Delete folder" />
+                </EndpointList>
+              </div>
             </div>
             <div className="mt-6">
               <h3 className="text-lg font-semibold">List Project Files</h3>
@@ -469,38 +506,42 @@ export default function ApiReferencePage() {
           <section id="versions" className="mt-16 scroll-mt-20">
             <h2 className="text-2xl font-bold tracking-tight">Versions</h2>
             <p className="mt-4 text-slate-400">
-              Every update to a file creates a new version. View version history and restore
-              previous versions through the web interface.
+              Every update to a file creates a new version. View version history and retrieve
+              previous versions via the API.
             </p>
             <div className="mt-6">
               <EndpointList>
-                <EndpointBadge method="GET" path="/api/files/{id}/versions" description="List file versions (web API)" />
-                <EndpointBadge method="GET" path="/api/files/{id}/versions/{version}" description="Get specific version" />
+                <EndpointBadge method="GET" path="/api/v1/files/{id}/versions" description="List file versions" />
+                <EndpointBadge method="GET" path="/api/v1/files/{id}/versions/{version}" description="Get specific version" />
               </EndpointList>
             </div>
-            <p className="mt-4 text-sm text-slate-500">
-              Note: Version endpoints use the web API authentication (session-based). For version
-              history, access your files through the web interface.
-            </p>
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold">List Versions</h3>
+              <div className="mt-4">
+                <CodeBlock code={listVersionsExample} language="bash" filename="bash" />
+              </div>
+            </div>
           </section>
 
           <section id="share" className="mt-16 scroll-mt-20">
             <h2 className="text-2xl font-bold tracking-tight">Share</h2>
             <p className="mt-4 text-slate-400">
               Create public share links for your files. Anyone with the link can view the file
-              content.
+              content without authentication.
             </p>
             <div className="mt-6">
               <EndpointList>
-                <EndpointBadge method="GET" path="/api/files/{id}/share" description="Get share status (web API)" />
-                <EndpointBadge method="POST" path="/api/files/{id}/share" description="Enable sharing" />
-                <EndpointBadge method="DELETE" path="/api/files/{id}/share" description="Revoke share link" />
+                <EndpointBadge method="GET" path="/api/v1/files/{id}/share" description="Get share status" />
+                <EndpointBadge method="POST" path="/api/v1/files/{id}/share" description="Enable sharing" />
+                <EndpointBadge method="DELETE" path="/api/v1/files/{id}/share" description="Revoke share link" />
               </EndpointList>
             </div>
-            <p className="mt-4 text-sm text-slate-500">
-              Note: Share endpoints use the web API authentication (session-based). Manage sharing
-              through the file editor in the web interface.
-            </p>
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold">Enable Sharing</h3>
+              <div className="mt-4">
+                <CodeBlock code={enableShareExample} language="bash" filename="bash" />
+              </div>
+            </div>
           </section>
 
           <section className="mt-16 rounded-2xl border border-slate-800/60 bg-slate-950/40 p-6">
@@ -536,11 +577,22 @@ export default function ApiReferencePage() {
             All endpoints require authentication using a Bearer token.
           </p>
           <nav className="mt-4 space-y-1.5 text-xs">
-            <SidebarEndpoint method="GET" path="/api/v1/files" description="List and retrieve files" />
-            <SidebarEndpoint method="POST" path="/api/v1/files" description="Upload a file" />
-            <SidebarEndpoint method="GET" path="/api/v1/files/{id}" description="Get file by ID" />
+            <p className="mb-1 mt-3 font-medium text-slate-400">Files</p>
+            <SidebarEndpoint method="GET" path="/api/v1/files" description="List files" />
+            <SidebarEndpoint method="POST" path="/api/v1/files" description="Create file" />
+            <SidebarEndpoint method="GET" path="/api/v1/files/{id}" description="Get file" />
             <SidebarEndpoint method="PATCH" path="/api/v1/files/{id}" description="Update file" />
             <SidebarEndpoint method="DELETE" path="/api/v1/files/{id}" description="Delete file" />
+            <p className="mb-1 mt-3 font-medium text-slate-400">Folders</p>
+            <SidebarEndpoint method="GET" path="/api/v1/folders" description="List folders" />
+            <SidebarEndpoint method="POST" path="/api/v1/folders" description="Create folder" />
+            <p className="mb-1 mt-3 font-medium text-slate-400">Projects</p>
+            <SidebarEndpoint method="GET" path="/api/v1/projects" description="List projects" />
+            <SidebarEndpoint method="POST" path="/api/v1/projects" description="Create project" />
+            <p className="mb-1 mt-3 font-medium text-slate-400">Versions</p>
+            <SidebarEndpoint method="GET" path="/api/v1/files/{id}/versions" description="List versions" />
+            <p className="mb-1 mt-3 font-medium text-slate-400">Share</p>
+            <SidebarEndpoint method="POST" path="/api/v1/files/{id}/share" description="Enable share" />
           </nav>
         </div>
       </aside>
