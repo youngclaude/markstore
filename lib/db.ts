@@ -27,6 +27,7 @@ export type FolderRow = {
   id: string;
   user_id: string;
   name: string;
+  project_id: string | null;
   created_at: string;
 };
 
@@ -102,10 +103,10 @@ export async function createFolder(userId: string, name: string): Promise<Folder
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
   await getDb()
-    .prepare("INSERT INTO folders (id, user_id, name, created_at) VALUES (?, ?, ?, ?)")
+    .prepare("INSERT INTO folders (id, user_id, name, project_id, created_at) VALUES (?, ?, ?, NULL, ?)")
     .bind(id, userId, name, createdAt)
     .run();
-  return { id, user_id: userId, name, created_at: createdAt };
+  return { id, user_id: userId, name, project_id: null, created_at: createdAt };
 }
 
 export async function findFolderByName(
@@ -113,7 +114,10 @@ export async function findFolderByName(
   name: string,
 ): Promise<FolderRow | null> {
   const row = await getDb()
-    .prepare("SELECT id, user_id, name, created_at FROM folders WHERE user_id = ? AND name = ?")
+    .prepare(
+      `SELECT id, user_id, name, project_id, created_at 
+       FROM folders WHERE user_id = ? AND name = ? AND project_id IS NULL`,
+    )
     .bind(userId, name)
     .first<FolderRow>();
   return row ?? null;
@@ -135,7 +139,9 @@ export async function ensureDefaultFolder(userId: string): Promise<FolderRow> {
 export async function listFolders(userId: string): Promise<FolderRow[]> {
   const { results } = await getDb()
     .prepare(
-      "SELECT id, user_id, name, created_at FROM folders WHERE user_id = ? ORDER BY name COLLATE NOCASE ASC",
+      `SELECT id, user_id, name, project_id, created_at 
+       FROM folders WHERE user_id = ? AND project_id IS NULL
+       ORDER BY name COLLATE NOCASE ASC`,
     )
     .bind(userId)
     .all<FolderRow>();
@@ -160,17 +166,18 @@ export async function listFilesInFolder(
 export async function getFileForUser(
   userId: string,
   fileId: string,
-): Promise<(FileRow & { folder_name: string }) | null> {
+): Promise<(FileRow & { folder_name: string; project_id: string | null; project_name: string | null }) | null> {
   const row = await getDb()
     .prepare(
       `SELECT f.id, f.user_id, f.folder_id, f.name, f.type, f.content, f.size, f.updated_at, f.created_at,
-              folders.name AS folder_name
+              folders.name AS folder_name, folders.project_id, p.name AS project_name
        FROM files f
        JOIN folders ON folders.id = f.folder_id
+       LEFT JOIN projects p ON p.id = folders.project_id
        WHERE f.id = ? AND f.user_id = ?`,
     )
     .bind(fileId, userId)
-    .first<FileRow & { folder_name: string }>();
+    .first<FileRow & { folder_name: string; project_id: string | null; project_name: string | null }>();
   return row ?? null;
 }
 

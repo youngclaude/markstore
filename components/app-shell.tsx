@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { FolderIcon, SettingsIcon } from "@/components/icons";
+import { FolderIcon, GridIcon, SettingsIcon } from "@/components/icons";
 import { DEFAULT_FOLDER_NAME } from "@/lib/files-shared";
 import { signOut } from "@/auth";
 import { resolveAuthSecret } from "@/lib/auth-secret";
@@ -25,8 +25,19 @@ export function AppShell({
         </div>
         <nav className="flex-1 px-3 py-4">
           <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            Projects
+            Workspace
           </p>
+          <Link
+            href="/app/projects"
+            className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm ${
+              activeFolder === "__projects__"
+                ? "bg-[#1D7BFF]/15 text-cyan-200 ring-1 ring-[#1D7BFF]/30"
+                : "text-slate-300 hover:bg-slate-900"
+            }`}
+          >
+            <GridIcon className="h-4 w-4 text-[#4F9DFF]" />
+            <span className="truncate">Projects</span>
+          </Link>
           <Link
             href="/app"
             className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm ${
@@ -36,7 +47,7 @@ export function AppShell({
             }`}
           >
             <FolderIcon className="h-4 w-4 text-[#4F9DFF]" />
-            <span className="truncate">{DEFAULT_FOLDER_NAME}</span>
+            <span className="truncate">General Files</span>
           </Link>
           <p className="mb-2 mt-5 px-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Account

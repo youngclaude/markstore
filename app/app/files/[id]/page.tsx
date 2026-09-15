@@ -17,13 +17,17 @@ export default async function FileEditorPage({
   const file = await getFileForUser(session.user.id, id);
   if (!file) notFound();
 
+  const activeFolder = file.project_id ? "__projects__" : file.folder_name;
+
   return (
-    <AppShell email={session.user.email ?? "unknown"}>
+    <AppShell email={session.user.email ?? "unknown"} activeFolder={activeFolder}>
       <FileEditor
         fileId={file.id}
         name={file.name}
         type={file.type}
         folderName={file.folder_name}
+        projectId={file.project_id}
+        projectName={file.project_name}
         initialContent={file.content}
       />
     </AppShell>
