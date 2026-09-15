@@ -1,25 +1,25 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { resolveAuthSecret } from "@/lib/auth-secret";
+import { ensureDefaultFolder } from "@/lib/db";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  // Test: wrap auth() in try-catch
-  let session = null;
+  // Resolve auth secret first
   try {
-    session = await auth();
-  } catch (error) {
-    console.error("[AppLayout] auth() threw:", error);
-    // If auth fails, redirect to signin
-    redirect("/signin");
+    resolveAuthSecret();
+  } catch {
+    // Will use process.env fallback
   }
+
+  // Get session - auth() now returns null on error instead of throwing
+  const session = await auth();
   
   if (!session?.user?.id) {
     redirect("/signin");
   }
+
+  // Backfill default folder for existing users
+  await ensureDefaultFolder(session.user.id);
   
-  return (
-    <div>
-      <p>Test: Auth works, user: {session.user.email}</p>
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }
