@@ -56,7 +56,7 @@ export default function Home() {
           </a>
         </nav>
         <div className="flex items-center gap-3 text-sm">
-          <Link href="/signup" className="hidden text-slate-300 hover:text-white sm:inline">
+          <Link href="/signin" className="hidden text-slate-300 hover:text-white sm:inline">
             Log in
           </Link>
           <Link
