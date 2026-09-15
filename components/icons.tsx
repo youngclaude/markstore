@@ -145,3 +145,29 @@ export function BackIcon({ className = "h-4 w-4" }: { className?: string }) {
     </svg>
   );
 }
+
+export function UploadCloudIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M7 18a4.5 4.5 0 0 1 .4-9 6 6 0 0 1 11.3 1.8A3.7 3.7 0 0 1 18.5 18H7z" />
+      <path d="M12 15V9M9.5 11.5 12 9l2.5 2.5" />
+    </svg>
+  );
+}
+
+export function AlertIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8v5M12 16h.01" />
+    </svg>
+  );
+}
+
+export function CloseIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M6 6l12 12M18 6 6 18" />
+    </svg>
+  );
+}
