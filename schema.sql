@@ -33,3 +33,16 @@ CREATE TABLE IF NOT EXISTS files (
 );
 CREATE INDEX IF NOT EXISTS idx_files_user ON files(user_id);
 CREATE INDEX IF NOT EXISTS idx_files_folder ON files(folder_id);
+
+-- File version history (ALL-7)
+CREATE TABLE IF NOT EXISTS file_versions (
+  id TEXT PRIMARY KEY,
+  file_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE(file_id, version)
+);
+CREATE INDEX IF NOT EXISTS idx_file_versions_file ON file_versions(file_id);
+CREATE INDEX IF NOT EXISTS idx_file_versions_user ON file_versions(user_id);
