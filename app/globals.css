@@ -24,3 +24,111 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+.markdown-preview {
+  color: #e2e8f0;
+  line-height: 1.7;
+  max-width: 52rem;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4 {
+  color: #f8fafc;
+  font-weight: 650;
+  margin: 1.4em 0 0.55em;
+  line-height: 1.25;
+}
+
+.markdown-preview h1 {
+  font-size: 1.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  padding-bottom: 0.35em;
+}
+
+.markdown-preview h2 {
+  font-size: 1.35rem;
+}
+
+.markdown-preview h3 {
+  font-size: 1.15rem;
+}
+
+.markdown-preview p {
+  margin: 0.75em 0;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  margin: 0.75em 0;
+  padding-left: 1.4em;
+}
+
+.markdown-preview li {
+  margin: 0.25em 0;
+}
+
+.markdown-preview a {
+  color: #7eb6ff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.markdown-preview code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0.35rem;
+  padding: 0.1em 0.35em;
+  color: #a5d6ff;
+}
+
+.markdown-preview pre {
+  margin: 1em 0;
+  padding: 1rem 1.1rem;
+  overflow: auto;
+  background: #080a0f;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 0.75rem;
+}
+
+.markdown-preview pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.markdown-preview blockquote {
+  margin: 1em 0;
+  padding: 0.2em 0 0.2em 1em;
+  border-left: 3px solid #1d7bff;
+  color: #94a3b8;
+}
+
+.markdown-preview hr {
+  border: 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+  margin: 1.5em 0;
+}
+
+.markdown-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 0.9rem;
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 0.45em 0.7em;
+}
+
+.markdown-preview th {
+  background: rgba(15, 23, 42, 0.8);
+}
