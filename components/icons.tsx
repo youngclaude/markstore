@@ -84,3 +84,64 @@ export function SettingsIcon({ className = "h-4 w-4" }: { className?: string }) 
     </svg>
   );
 }
+
+export function EyeIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export function CodeIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14" />
+    </svg>
+  );
+}
+
+export function PencilIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M4 20h4L19 9l-4-4L4 16v4z" />
+      <path d="m13 7 4 4" />
+    </svg>
+  );
+}
+
+export function HistoryIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M4 12a8 8 0 1 0 2.3-5.7" />
+      <path d="M4 4v5h5M12 8v5l3 2" />
+    </svg>
+  );
+}
+
+export function TreeIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M8 4c-2 0-3 1.5-3 4v2c0 1.5-1 2.5-2 3 1 .5 2 1.5 2 3v2c0 2.5 1 4 3 4" />
+      <path d="M16 4c2 0 3 1.5 3 4v2c0 1.5 1 2.5 2 3-1 .5-2 1.5-2 3v2c0 2.5-1 4-3 4" />
+    </svg>
+  );
+}
+
+export function RestoreIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M4 12a8 8 0 1 0 2.3-5.7" />
+      <path d="M4 4v5h5" />
+    </svg>
+  );
+}
+
+export function BackIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M15 6 9 12l6 6" />
+    </svg>
+  );
+}
