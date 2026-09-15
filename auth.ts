@@ -83,9 +83,17 @@ export const handlers = {
   POST: (req: Request) => getAuth().handlers.POST(req),
 };
 
-export const auth: AuthApi["auth"] = ((...args: Parameters<AuthApi["auth"]>) =>
-  // @ts-expect-error Auth.js overload forwarding
-  getAuth().auth(...args)) as AuthApi["auth"];
+export const auth: AuthApi["auth"] = (async (...args: Parameters<AuthApi["auth"]>) => {
+  try {
+    const authInstance = getAuth();
+    // @ts-expect-error Auth.js overload forwarding
+    return await authInstance.auth(...args);
+  } catch (error) {
+    console.error("[auth] Error in auth():", error);
+    // Return null session on error instead of throwing
+    return null;
+  }
+}) as AuthApi["auth"];
 
 export const signIn: AuthApi["signIn"] = ((...args: Parameters<AuthApi["signIn"]>) =>
   // @ts-expect-error Auth.js overload forwarding
