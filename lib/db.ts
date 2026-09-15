@@ -28,6 +28,7 @@ export type FolderRow = {
   user_id: string;
   name: string;
   project_id: string | null;
+  parent_id: string | null;
   created_at: string;
 };
 
@@ -99,14 +100,18 @@ export async function createUser(input: {
   };
 }
 
-export async function createFolder(userId: string, name: string): Promise<FolderRow> {
+export async function createFolder(
+  userId: string,
+  name: string,
+  parentId: string | null = null,
+): Promise<FolderRow> {
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
   await getDb()
-    .prepare("INSERT INTO folders (id, user_id, name, project_id, created_at) VALUES (?, ?, ?, NULL, ?)")
-    .bind(id, userId, name, createdAt)
+    .prepare("INSERT INTO folders (id, user_id, name, project_id, parent_id, created_at) VALUES (?, ?, ?, NULL, ?, ?)")
+    .bind(id, userId, name, parentId, createdAt)
     .run();
-  return { id, user_id: userId, name, project_id: null, created_at: createdAt };
+  return { id, user_id: userId, name, project_id: null, parent_id: parentId, created_at: createdAt };
 }
 
 export async function findFolderByName(
@@ -115,7 +120,7 @@ export async function findFolderByName(
 ): Promise<FolderRow | null> {
   const row = await getDb()
     .prepare(
-      `SELECT id, user_id, name, project_id, created_at 
+      `SELECT id, user_id, name, project_id, parent_id, created_at 
        FROM folders WHERE user_id = ? AND name = ? AND project_id IS NULL`,
     )
     .bind(userId, name)
@@ -139,7 +144,7 @@ export async function ensureDefaultFolder(userId: string): Promise<FolderRow> {
 export async function listFolders(userId: string): Promise<FolderRow[]> {
   const { results } = await getDb()
     .prepare(
-      `SELECT id, user_id, name, project_id, created_at 
+      `SELECT id, user_id, name, project_id, parent_id, created_at 
        FROM folders WHERE user_id = ? AND project_id IS NULL
        ORDER BY name COLLATE NOCASE ASC`,
     )
@@ -267,4 +272,93 @@ export async function restoreFileVersion(
   const snap = await getFileVersion(userId, fileId, version);
   if (!snap) return null;
   return updateFileContent(userId, fileId, snap.content);
+}
+
+/** Get a single folder by ID (general files, not project-scoped). */
+export async function getFolder(
+  userId: string,
+  folderId: string,
+): Promise<FolderRow | null> {
+  const row = await getDb()
+    .prepare(
+      `SELECT id, user_id, name, project_id, parent_id, created_at 
+       FROM folders WHERE id = ? AND user_id = ? AND project_id IS NULL`,
+    )
+    .bind(folderId, userId)
+    .first<FolderRow>();
+  return row ?? null;
+}
+
+/** Rename a folder. */
+export async function renameFolder(
+  userId: string,
+  folderId: string,
+  newName: string,
+): Promise<FolderRow | null> {
+  const existing = await getFolder(userId, folderId);
+  if (!existing) return null;
+  if (existing.name === DEFAULT_FOLDER_NAME) return null;
+
+  await getDb()
+    .prepare(`UPDATE folders SET name = ? WHERE id = ? AND user_id = ?`)
+    .bind(newName.trim(), folderId, userId)
+    .run();
+
+  return { ...existing, name: newName.trim() };
+}
+
+/** Delete a folder and all its contents (general files, not project-scoped). */
+export async function deleteFolder(
+  userId: string,
+  folderId: string,
+): Promise<boolean> {
+  const folder = await getFolder(userId, folderId);
+  if (!folder) return false;
+  if (folder.name === DEFAULT_FOLDER_NAME) return false;
+
+  const childFolders = await getDb()
+    .prepare(`SELECT id FROM folders WHERE user_id = ? AND parent_id = ? AND project_id IS NULL`)
+    .bind(userId, folderId)
+    .all<{ id: string }>();
+
+  for (const child of childFolders.results ?? []) {
+    await deleteFolder(userId, child.id);
+  }
+
+  await getDb()
+    .prepare(
+      `DELETE FROM file_versions WHERE file_id IN (
+         SELECT id FROM files WHERE folder_id = ?
+       )`,
+    )
+    .bind(folderId)
+    .run();
+
+  await getDb()
+    .prepare(`DELETE FROM files WHERE folder_id = ?`)
+    .bind(folderId)
+    .run();
+
+  const result = await getDb()
+    .prepare(`DELETE FROM folders WHERE id = ? AND user_id = ?`)
+    .bind(folderId, userId)
+    .run();
+
+  return (result.meta?.changes ?? 0) > 0;
+}
+
+/** List all files across all general folders for a user. */
+export async function listAllGeneralFiles(userId: string): Promise<(FileRow & { folder_name: string })[]> {
+  const { results } = await getDb()
+    .prepare(
+      `SELECT f.id, f.user_id, f.folder_id, f.name, f.type, f.content, f.size, f.updated_at, f.created_at,
+              folders.name AS folder_name
+       FROM files f
+       JOIN folders ON folders.id = f.folder_id
+       WHERE f.user_id = ? AND folders.project_id IS NULL
+       ORDER BY f.name COLLATE NOCASE ASC`,
+    )
+    .bind(userId)
+    .all<FileRow & { folder_name: string }>();
+  return results ?? [];
 }
