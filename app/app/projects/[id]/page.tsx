@@ -25,7 +25,12 @@ export default async function ProjectDetailPage({
   }
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
-  const userId = session!.user!.id;
+  const userId = session?.user?.id;
+
+  // Layout should have already validated session, but be defensive
+  if (!userId) {
+    return null;
+  }
 
   const { id } = await params;
   const sp = searchParams ? await searchParams : {};

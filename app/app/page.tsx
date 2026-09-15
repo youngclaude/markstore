@@ -20,7 +20,12 @@ export default async function AppPage() {
   }
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
-  const userId = session!.user!.id;
+  const userId = session?.user?.id;
+
+  // Layout should have already validated session, but be defensive
+  if (!userId) {
+    return null;
+  }
 
   const folder = await ensureDefaultFolder(userId);
   const files = await listFilesInFolder(userId, folder.id);
