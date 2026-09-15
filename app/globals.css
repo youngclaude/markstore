@@ -132,3 +132,9 @@ a {
 .markdown-preview th {
   background: rgba(15, 23, 42, 0.8);
 }
+
+
+.json-key { color: #7dd3fc; }
+.json-str { color: #86efac; }
+.json-num { color: #fdba74; }
+.json-lit { color: #c4b5fd; }
