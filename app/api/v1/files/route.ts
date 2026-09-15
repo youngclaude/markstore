@@ -3,11 +3,11 @@ import {
   createFile,
   ensureDefaultFolder,
   findFolderByName,
-  listUserFiles,
   normalizeFileName,
   type FileType,
   DEFAULT_FOLDER_NAME,
 } from "@/lib/db";
+import { listUserFiles } from "@/lib/files-agent";
 
 function jsonError(status: number, error: string) {
   return Response.json({ error }, { status });
