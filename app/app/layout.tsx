@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { resolveAuthSecret } from "@/lib/auth-secret";
-import { ensureDefaultFolder } from "@/lib/db";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  // Temporary minimal layout to test if issue is with auth imports
   try {
-    // Attempt to resolve auth secret from Workers env
+    // Dynamically import auth to isolate errors
+    const { auth } = await import("@/auth");
+    const { resolveAuthSecret } = await import("@/lib/auth-secret");
+    const { ensureDefaultFolder } = await import("@/lib/db");
+
     try {
       resolveAuthSecret();
     } catch {
@@ -21,8 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     await ensureDefaultFolder(session.user.id);
     return <>{children}</>;
   } catch (error) {
-    // Any error in auth flow should redirect to signin rather than crash
-    console.error("[AppLayout] Auth error, redirecting to signin:", error);
+    console.error("[AppLayout] Error:", error);
     redirect("/signin");
   }
 }
