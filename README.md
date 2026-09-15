@@ -77,6 +77,20 @@ curl -sS -X DELETE -H "Authorization: Bearer $MSK_KEY" $BASE/api/v1/files/<id>
 
 Schema: `api_keys(id, user_id, name, key_hash, key_prefix, created_at, last_used_at, revoked_at)`.
 
+## Public shares (ALL-9)
+
+Share any file via a read-only public link. Links never expire until explicitly revoked.
+
+1. Open a file in the editor
+2. Click **Share** button in the header
+3. Toggle sharing on to generate a link
+4. Copy the URL (`https://usemarkstore.com/s/<slug>`)
+5. Revoke anytime to disable access
+
+Public viewers see rendered Markdown or syntax-highlighted JSON. The page prompts visitors to sign up.
+
+Schema: `file_shares(id, file_id, user_id, slug UNIQUE, created_at, revoked_at)`.
+
 ## Scripts
 
 - `npm run dev` — local vinext

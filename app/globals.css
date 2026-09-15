@@ -134,6 +134,11 @@ a {
 }
 
 
+.json-preview {
+  color: #cbd5e1;
+  background: #080a0f;
+}
+
 .json-key { color: #7dd3fc; }
 .json-str { color: #86efac; }
 .json-num { color: #fdba74; }

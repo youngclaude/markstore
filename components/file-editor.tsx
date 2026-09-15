@@ -12,6 +12,7 @@ import {
   SaveIcon,
   TreeIcon,
 } from "@/components/icons";
+import { SharePanel } from "@/components/share-panel";
 import { JsonTree } from "@/components/json-tree";
 import { renderMarkdown } from "@/lib/markdown";
 import type { FileType } from "@/lib/files-shared";
@@ -128,6 +129,7 @@ export function FileEditor({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {status ? <span className="text-xs text-slate-400">{status}</span> : null}
+          <SharePanel fileId={fileId} />
           <Link
             href={`/app/files/${fileId}/versions`}
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 hover:border-slate-500"
