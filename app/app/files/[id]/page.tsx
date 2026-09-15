@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { AppShell } from "@/components/app-shell";
 import { FileEditor } from "@/components/file-editor";
@@ -13,10 +13,11 @@ export default async function FileEditorPage({
   try {
     resolveAuthSecret();
   } catch {
-    /* auth() will handle missing secret */
+    /* process.env may already have AUTH_SECRET */
   }
   const session = await auth();
-  if (!session?.user?.id) redirect("/signin");
+  // Middleware handles redirect; fallback check
+  if (!session?.user?.id) return null;
   const { id } = await params;
   const file = await getFileForUser(session.user.id, id);
   if (!file) notFound();

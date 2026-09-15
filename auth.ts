@@ -6,23 +6,15 @@ import { verifyPassword } from "@/lib/password";
 
 function createNextAuth() {
   // Resolve Workers secret binding into process.env before Auth.js reads it
-  let secret: string | undefined;
   try {
-    secret = resolveAuthSecret();
+    resolveAuthSecret();
   } catch {
-    // Fall back to process.env directly
-    secret = process.env.AUTH_SECRET;
-  }
-
-  // If no secret is available, we can't create a valid auth instance
-  // Auth.js will throw when trying to sign/verify JWTs
-  if (!secret) {
-    console.error("[Auth] No AUTH_SECRET available");
+    /* local/build may rely on process.env alone */
   }
 
   return NextAuth({
     trustHost: true,
-    secret,
+    secret: process.env.AUTH_SECRET,
     session: { strategy: "jwt" },
     pages: {
       signIn: "/signin",
@@ -36,6 +28,11 @@ function createNextAuth() {
           password: { label: "Password", type: "password" },
         },
         async authorize(credentials) {
+          try {
+            resolveAuthSecret();
+          } catch {
+            /* Auth.js validates secret separately */
+          }
           const email = String(credentials?.email ?? "")
             .toLowerCase()
             .trim();
@@ -72,68 +69,25 @@ function createNextAuth() {
 type AuthApi = ReturnType<typeof createNextAuth>;
 
 let cached: AuthApi | null = null;
-let authError: Error | null = null;
 
-function getAuth(): AuthApi | null {
-  if (authError) return null;
-  if (!cached) {
-    try {
-      cached = createNextAuth();
-    } catch (error) {
-      console.error("[auth] Error creating NextAuth:", error);
-      authError = error as Error;
-      return null;
-    }
-  }
+function getAuth(): AuthApi {
+  if (!cached) cached = createNextAuth();
   return cached;
 }
 
 export const handlers = {
-  GET: async (req: Request) => {
-    const authInstance = getAuth();
-    if (!authInstance) {
-      return new Response(JSON.stringify({ error: "Auth not configured" }), { status: 500 });
-    }
-    return authInstance.handlers.GET(req);
-  },
-  POST: async (req: Request) => {
-    const authInstance = getAuth();
-    if (!authInstance) {
-      return new Response(JSON.stringify({ error: "Auth not configured" }), { status: 500 });
-    }
-    return authInstance.handlers.POST(req);
-  },
+  GET: (req: Request) => getAuth().handlers.GET(req),
+  POST: (req: Request) => getAuth().handlers.POST(req),
 };
 
-export const auth: AuthApi["auth"] = (async (...args: Parameters<AuthApi["auth"]>) => {
-  try {
-    const authInstance = getAuth();
-    if (!authInstance) {
-      console.error("[auth] No auth instance available");
-      return null;
-    }
-    // @ts-expect-error Auth.js overload forwarding
-    return await authInstance.auth(...args);
-  } catch (error) {
-    console.error("[auth] Error in auth():", error);
-    return null;
-  }
-}) as AuthApi["auth"];
-
-export const signIn: AuthApi["signIn"] = (async (...args: Parameters<AuthApi["signIn"]>) => {
-  const authInstance = getAuth();
-  if (!authInstance) {
-    throw new Error("Auth not configured");
-  }
+export const auth: AuthApi["auth"] = ((...args: Parameters<AuthApi["auth"]>) =>
   // @ts-expect-error Auth.js overload forwarding
-  return authInstance.signIn(...args);
-}) as AuthApi["signIn"];
+  getAuth().auth(...args)) as AuthApi["auth"];
 
-export const signOut: AuthApi["signOut"] = (async (...args: Parameters<AuthApi["signOut"]>) => {
-  const authInstance = getAuth();
-  if (!authInstance) {
-    throw new Error("Auth not configured");
-  }
+export const signIn: AuthApi["signIn"] = ((...args: Parameters<AuthApi["signIn"]>) =>
   // @ts-expect-error Auth.js overload forwarding
-  return authInstance.signOut(...args);
-}) as AuthApi["signOut"];
+  getAuth().signIn(...args)) as AuthApi["signIn"];
+
+export const signOut: AuthApi["signOut"] = ((...args: Parameters<AuthApi["signOut"]>) =>
+  // @ts-expect-error Auth.js overload forwarding
+  getAuth().signOut(...args)) as AuthApi["signOut"];
