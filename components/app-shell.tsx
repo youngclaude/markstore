@@ -5,17 +5,29 @@ import { DEFAULT_FOLDER_NAME } from "@/lib/files-shared";
 import { signOut } from "@/auth";
 import { resolveAuthSecret } from "@/lib/auth-secret";
 
+function ChartIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M3 3v18h18" />
+      <path d="m7 14 4-4 4 4 5-6" />
+    </svg>
+  );
+}
+
 export function AppShell({
   email,
   children,
   activeFolder = DEFAULT_FOLDER_NAME,
+  isAdmin = false,
 }: {
   email: string;
   children: React.ReactNode;
   activeFolder?: string;
+  isAdmin?: boolean;
 }) {
   const initials = email.slice(0, 2).toUpperCase();
   const settingsActive = activeFolder === "__settings__";
+  const analyticsActive = activeFolder === "__analytics__";
 
   return (
     <div className="flex min-h-screen bg-[#0B0E14] text-slate-50">
@@ -63,6 +75,24 @@ export function AppShell({
             <SettingsIcon className="h-4 w-4 text-[#4F9DFF]" />
             <span className="truncate">Settings</span>
           </Link>
+          {isAdmin && (
+            <>
+              <p className="mb-2 mt-5 px-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Admin Only
+              </p>
+              <Link
+                href="/app/analytics"
+                className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm ${
+                  analyticsActive
+                    ? "bg-[#1D7BFF]/15 text-cyan-200 ring-1 ring-[#1D7BFF]/30"
+                    : "text-slate-300 hover:bg-slate-900"
+                }`}
+              >
+                <ChartIcon className="h-4 w-4 text-[#4F9DFF]" />
+                <span className="truncate">Founder analytics</span>
+              </Link>
+            </>
+          )}
         </nav>
         <div className="border-t border-slate-800/80 p-3">
           <div className="mb-3 flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-2.5 py-2">
@@ -71,7 +101,7 @@ export function AppShell({
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-slate-100">{email}</p>
-              <p className="text-[10px] text-slate-500">Signed in</p>
+              <p className="text-[10px] text-slate-500">{isAdmin ? "Founder · Admin" : "Signed in"}</p>
             </div>
           </div>
           <form

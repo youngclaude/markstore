@@ -10,6 +10,7 @@ import {
   listProjectFiles,
   listProjectFolders,
 } from "@/lib/projects";
+import { isAdminEmail } from "@/lib/admin";
 
 export default async function ProjectDetailPage({
   params,
@@ -26,6 +27,7 @@ export default async function ProjectDetailPage({
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
   const userId = session?.user?.id;
+  const isAdmin = isAdminEmail(email);
 
   // Layout should have already validated session, but be defensive
   if (!userId) {
@@ -43,7 +45,7 @@ export default async function ProjectDetailPage({
   const files = await listProjectFiles(userId, id, activeFolderId);
 
   return (
-    <AppShell email={email} activeFolder="__projects__">
+    <AppShell email={email} activeFolder="__projects__" isAdmin={isAdmin}>
       <header className="border-b border-slate-800/80 px-6 py-4">
         <nav className="mb-3 flex items-center gap-1 text-sm text-slate-400">
           <Link href="/app/projects" className="hover:text-slate-200">

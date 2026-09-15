@@ -9,6 +9,7 @@ import {
   listFileVersions,
 } from "@/lib/db";
 import { resolveAuthSecret } from "@/lib/auth-secret";
+import { isAdminEmail } from "@/lib/admin";
 
 export default async function FileVersionsPage({
   params,
@@ -48,8 +49,10 @@ export default async function FileVersionsPage({
     previousVersion = prev?.version ?? null;
   }
 
+  const isAdmin = isAdminEmail(session.user.email);
+
   return (
-    <AppShell email={session.user.email ?? "unknown"}>
+    <AppShell email={session.user.email ?? "unknown"} isAdmin={isAdmin}>
       <VersionHistory
         fileId={file.id}
         fileName={file.name}

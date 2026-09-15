@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { ApiKeysPanel } from "@/components/api-keys-panel";
 import { SettingsIcon } from "@/components/icons";
 import { resolveAuthSecret } from "@/lib/auth-secret";
+import { isAdminEmail } from "@/lib/admin";
 
 export default async function SettingsPage() {
   try {
@@ -12,9 +13,10 @@ export default async function SettingsPage() {
   }
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
+  const isAdmin = isAdminEmail(email);
 
   return (
-    <AppShell email={email} activeFolder="__settings__">
+    <AppShell email={email} activeFolder="__settings__" isAdmin={isAdmin}>
       <header className="flex items-center gap-3 border-b border-slate-800/80 px-6 py-4">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1D7BFF]/15 text-[#4F9DFF]">
           <SettingsIcon className="h-5 w-5" />
