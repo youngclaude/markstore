@@ -1,7 +1,7 @@
 import { authenticateApiKey } from "@/lib/api-keys";
 import {
   deleteFolder,
-  getFolderById,
+  getFolder,
   renameFolder,
   DEFAULT_FOLDER_NAME,
 } from "@/lib/db";
@@ -22,7 +22,7 @@ export async function GET(request: Request, ctx: Ctx) {
     if (!agent) return jsonError(401, "Unauthorized — provide Authorization: Bearer msk_…");
 
     const { id } = await ctx.params;
-    const folder = await getFolderById(agent.userId, id);
+    const folder = await getFolder(agent.userId, id);
     if (!folder) return jsonError(404, "Folder not found.");
 
     return Response.json({
@@ -44,7 +44,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
     if (!agent) return jsonError(401, "Unauthorized — provide Authorization: Bearer msk_…");
 
     const { id } = await ctx.params;
-    const folder = await getFolderById(agent.userId, id);
+    const folder = await getFolder(agent.userId, id);
     if (!folder) return jsonError(404, "Folder not found.");
 
     if (folder.name === DEFAULT_FOLDER_NAME) {
@@ -95,7 +95,7 @@ export async function DELETE(request: Request, ctx: Ctx) {
     if (!agent) return jsonError(401, "Unauthorized — provide Authorization: Bearer msk_…");
 
     const { id } = await ctx.params;
-    const folder = await getFolderById(agent.userId, id);
+    const folder = await getFolder(agent.userId, id);
     if (!folder) return jsonError(404, "Folder not found.");
 
     if (folder.name === DEFAULT_FOLDER_NAME) {

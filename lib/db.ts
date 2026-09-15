@@ -153,66 +153,6 @@ export async function listFolders(userId: string): Promise<FolderRow[]> {
   return results ?? [];
 }
 
-export async function getFolderById(
-  userId: string,
-  folderId: string,
-): Promise<FolderRow | null> {
-  const row = await getDb()
-    .prepare(
-      `SELECT id, user_id, name, project_id, created_at 
-       FROM folders WHERE id = ? AND user_id = ? AND project_id IS NULL`,
-    )
-    .bind(folderId, userId)
-    .first<FolderRow>();
-  return row ?? null;
-}
-
-export async function renameFolder(
-  userId: string,
-  folderId: string,
-  newName: string,
-): Promise<FolderRow | null> {
-  const existing = await getFolderById(userId, folderId);
-  if (!existing) return null;
-  const trimmed = newName.trim();
-  if (!trimmed) return null;
-  await getDb()
-    .prepare(`UPDATE folders SET name = ? WHERE id = ? AND user_id = ?`)
-    .bind(trimmed, folderId, userId)
-    .run();
-  return { ...existing, name: trimmed };
-}
-
-export async function deleteFolder(
-  userId: string,
-  folderId: string,
-): Promise<boolean> {
-  const existing = await getFolderById(userId, folderId);
-  if (!existing) return false;
-  if (existing.name === DEFAULT_FOLDER_NAME) return false;
-
-  await getDb()
-    .prepare(
-      `DELETE FROM file_versions WHERE file_id IN (
-         SELECT id FROM files WHERE folder_id = ?
-       )`,
-    )
-    .bind(folderId)
-    .run();
-
-  await getDb()
-    .prepare(`DELETE FROM files WHERE folder_id = ?`)
-    .bind(folderId)
-    .run();
-
-  const result = await getDb()
-    .prepare(`DELETE FROM folders WHERE id = ? AND user_id = ? AND project_id IS NULL`)
-    .bind(folderId, userId)
-    .run();
-
-  return (result.meta?.changes ?? 0) > 0;
-}
-
 export async function listFilesInFolder(
   userId: string,
   folderId: string,
