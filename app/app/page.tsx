@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { AppShell } from "@/components/app-shell";
+import { FileUploadZone } from "@/components/file-upload-zone";
 import { DocIcon, FolderIcon, JsonIcon, PlusIcon } from "@/components/icons";
 import {
   DEFAULT_FOLDER_NAME,
@@ -42,6 +43,7 @@ export default async function AppPage() {
       </header>
 
       <section className="flex-1 px-6 py-5">
+        <FileUploadZone />
         <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/40">
           <div className="grid grid-cols-[minmax(0,1.6fr)_100px_100px_180px] gap-2 border-b border-slate-800/80 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
             <span>Name</span>
