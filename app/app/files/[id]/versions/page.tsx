@@ -17,7 +17,11 @@ export default async function FileVersionsPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ v?: string }>;
 }) {
-  resolveAuthSecret();
+  try {
+    resolveAuthSecret();
+  } catch {
+    /* auth() will handle missing secret */
+  }
   const session = await auth();
   if (!session?.user?.id) redirect("/signin");
   const { id } = await params;

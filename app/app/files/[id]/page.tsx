@@ -10,7 +10,11 @@ export default async function FileEditorPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  resolveAuthSecret();
+  try {
+    resolveAuthSecret();
+  } catch {
+    /* auth() will handle missing secret */
+  }
   const session = await auth();
   if (!session?.user?.id) redirect("/signin");
   const { id } = await params;

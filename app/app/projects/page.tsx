@@ -9,7 +9,11 @@ import { listProjects } from "@/lib/projects";
 import { formatModified } from "@/lib/files-shared";
 
 export default async function ProjectsPage() {
-  resolveAuthSecret();
+  try {
+    resolveAuthSecret();
+  } catch {
+    /* auth() will handle missing secret */
+  }
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
   const userId = session!.user!.id;

@@ -18,7 +18,11 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ folder?: string }>;
 }) {
-  resolveAuthSecret();
+  try {
+    resolveAuthSecret();
+  } catch {
+    /* auth() will handle missing secret */
+  }
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
   const userId = session!.user!.id;

@@ -13,7 +13,11 @@ import {
 import { resolveAuthSecret } from "@/lib/auth-secret";
 
 export default async function AppPage() {
-  resolveAuthSecret();
+  try {
+    resolveAuthSecret();
+  } catch {
+    /* auth() will handle missing secret */
+  }
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
   const userId = session!.user!.id;

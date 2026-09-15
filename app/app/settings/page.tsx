@@ -5,7 +5,11 @@ import { SettingsIcon } from "@/components/icons";
 import { resolveAuthSecret } from "@/lib/auth-secret";
 
 export default async function SettingsPage() {
-  resolveAuthSecret();
+  try {
+    resolveAuthSecret();
+  } catch {
+    /* auth() will handle missing secret */
+  }
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
 

@@ -9,7 +9,11 @@ export default async function NewFilePage({
 }: {
   searchParams?: Promise<{ type?: string }>;
 }) {
-  resolveAuthSecret();
+  try {
+    resolveAuthSecret();
+  } catch {
+    /* auth() will handle missing secret */
+  }
   const session = await auth();
   const email = session?.user?.email ?? "unknown";
   const sp = searchParams ? await searchParams : {};
