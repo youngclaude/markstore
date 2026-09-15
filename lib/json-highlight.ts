@@ -7,24 +7,59 @@ export function highlightJson(source: string): string {
     // keep raw
   }
 
-  const escaped = pretty
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  // Tokenize roughly: strings, then numbers/bools/null
-  return escaped.replace(
-    /(" (?:\\.|[^"\\])*")(\s*:)?|\b(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b|\b(true|false|null)\b/g,
-    (match, str: string | undefined, colon: string | undefined, num: string | undefined, lit: string | undefined) => {
-      if (str !== undefined) {
-        if (colon) {
-          return `<span class="json-key">${str}</span>${colon}`;
+  let out = "";
+  let i = 0;
+  const s = pretty;
+  while (i < s.length) {
+    const ch = s[i]!;
+    if (ch === '"') {
+      let j = i + 1;
+      while (j < s.length) {
+        if (s[j] === "\\" && j + 1 < s.length) {
+          j += 2;
+          continue;
         }
-        return `<span class="json-str">${str}</span>`;
+        if (s[j] === '"') break;
+        j++;
       }
-      if (num !== undefined) return `<span class="json-num">${num}</span>`;
-      if (lit !== undefined) return `<span class="json-lit">${lit}</span>`;
-      return match;
-    },
-  );
+      const raw = s.slice(i, Math.min(j + 1, s.length));
+      let k = j + 1;
+      while (k < s.length && /\s/.test(s[k]!)) k++;
+      if (s[k] === ":") {
+        out += '<span class="json-key">' + esc(raw) + "</span>";
+      } else {
+        out += '<span class="json-str">' + esc(raw) + "</span>";
+      }
+      i = j + 1;
+      continue;
+    }
+    if (/[0-9-]/.test(ch)) {
+      let j = i + 1;
+      while (j < s.length && /[0-9.eE+-]/.test(s[j]!)) j++;
+      out += '<span class="json-num">' + esc(s.slice(i, j)) + "</span>";
+      i = j;
+      continue;
+    }
+    if (s.startsWith("true", i) && !/[A-Za-z0-9_]/.test(s[i + 4] ?? "")) {
+      out += '<span class="json-lit">true</span>';
+      i += 4;
+      continue;
+    }
+    if (s.startsWith("false", i) && !/[A-Za-z0-9_]/.test(s[i + 5] ?? "")) {
+      out += '<span class="json-lit">false</span>';
+      i += 5;
+      continue;
+    }
+    if (s.startsWith("null", i) && !/[A-Za-z0-9_]/.test(s[i + 4] ?? "")) {
+      out += '<span class="json-lit">null</span>';
+      i += 4;
+      continue;
+    }
+    out += esc(ch);
+    i++;
+  }
+  return out;
 }
