@@ -1,9 +1,6 @@
 import { authenticateApiKey } from "@/lib/api-keys";
-import {
-  deleteFile,
-  getFileForUser,
-  updateFileMeta,
-} from "@/lib/db";
+import { getFileForUser } from "@/lib/db";
+import { deleteFile, updateFileMeta } from "@/lib/files-agent";
 
 type Ctx = { params: Promise<{ id: string }> };
 
