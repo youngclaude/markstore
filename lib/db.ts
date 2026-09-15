@@ -4,9 +4,16 @@ import {
   normalizeFileName,
   type FileType,
 } from "@/lib/files-shared";
+import { getFileVersion, insertFileVersion } from "@/lib/file-versions";
 
 export { DEFAULT_FOLDER_NAME, normalizeFileName, formatBytes, formatModified } from "@/lib/files-shared";
 export type { FileType } from "@/lib/files-shared";
+export {
+  getFileVersion,
+  getPreviousFileVersion,
+  insertFileVersion,
+  listFileVersions,
+} from "@/lib/file-versions";
 
 export type UserRow = {
   id: string;
@@ -23,7 +30,6 @@ export type FolderRow = {
   created_at: string;
 };
 
-
 export type FileRow = {
   id: string;
   user_id: string;
@@ -34,6 +40,19 @@ export type FileRow = {
   size: number;
   updated_at: string;
   created_at: string;
+};
+
+export type FileVersionRow = {
+  id: string;
+  file_id: string;
+  user_id: string;
+  version: number;
+  content: string;
+  created_at: string;
+};
+
+export type FileVersionMeta = Omit<FileVersionRow, "content"> & {
+  email?: string | null;
 };
 
 type CloudflareEnv = {
@@ -107,7 +126,6 @@ export async function ensureDefaultFolder(userId: string): Promise<FolderRow> {
   try {
     return await createFolder(userId, DEFAULT_FOLDER_NAME);
   } catch {
-    // Race: another request may have created it
     const again = await findFolderByName(userId, DEFAULT_FOLDER_NAME);
     if (again) return again;
     throw new Error("Could not ensure default folder");
@@ -160,7 +178,6 @@ function byteSize(content: string): number {
   return new TextEncoder().encode(content).length;
 }
 
-
 export async function createFile(input: {
   userId: string;
   folderId: string;
@@ -180,6 +197,12 @@ export async function createFile(input: {
     )
     .bind(id, input.userId, input.folderId, name, input.type, content, size, now, now)
     .run();
+  await insertFileVersion({
+    fileId: id,
+    userId: input.userId,
+    content,
+    createdAt: now,
+  });
   return {
     id,
     user_id: input.userId,
@@ -197,7 +220,7 @@ export async function updateFileContent(
   userId: string,
   fileId: string,
   content: string,
-): Promise<FileRow | null> {
+): Promise<(FileRow & { version: number }) | null> {
   const existing = await getFileForUser(userId, fileId);
   if (!existing) return null;
   const now = new Date().toISOString();
@@ -208,6 +231,12 @@ export async function updateFileContent(
     )
     .bind(content, size, now, fileId, userId)
     .run();
+  const ver = await insertFileVersion({
+    fileId,
+    userId,
+    content,
+    createdAt: now,
+  });
   return {
     id: existing.id,
     user_id: existing.user_id,
@@ -218,7 +247,17 @@ export async function updateFileContent(
     size,
     updated_at: now,
     created_at: existing.created_at,
+    version: ver.version,
   };
 }
 
-
+/** Restore a historical snapshot into the live file and create a new version. */
+export async function restoreFileVersion(
+  userId: string,
+  fileId: string,
+  version: number,
+): Promise<(FileRow & { version: number }) | null> {
+  const snap = await getFileVersion(userId, fileId, version);
+  if (!snap) return null;
+  return updateFileContent(userId, fileId, snap.content);
+}
