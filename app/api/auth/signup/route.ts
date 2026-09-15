@@ -1,4 +1,4 @@
-import { createUser, findUserByEmail } from "@/lib/db";
+import { createUser, ensureDefaultFolder, findUserByEmail } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
 import { resolveAuthSecret } from "@/lib/auth-secret";
 
@@ -35,7 +35,8 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await hashPassword(password);
-    await createUser({ email, passwordHash, planToStore });
+    const user = await createUser({ email, passwordHash, planToStore });
+    await ensureDefaultFolder(user.id);
 
     return Response.json({ ok: true, email });
   } catch (err) {
