@@ -7,3 +7,29 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Default workspace folders (ALL-15)
+CREATE TABLE IF NOT EXISTS folders (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE(user_id, name)
+);
+CREATE INDEX IF NOT EXISTS idx_folders_user ON folders(user_id);
+
+-- Markdown / JSON files (ALL-16 / ALL-17)
+CREATE TABLE IF NOT EXISTS files (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  folder_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL CHECK(type IN ('md', 'json')),
+  content TEXT NOT NULL DEFAULT '',
+  size INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE(folder_id, name)
+);
+CREATE INDEX IF NOT EXISTS idx_files_user ON files(user_id);
+CREATE INDEX IF NOT EXISTS idx_files_folder ON files(folder_id);
